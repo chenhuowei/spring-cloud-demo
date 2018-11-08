@@ -3,6 +3,7 @@ package com.fireway.controller;
 import com.fireway.service.LoadBalanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,17 @@ public class LoadBalanceController {
 
         return this.loadBalanceService.order(name);
     }
+    @GetMapping("user/info")
+    public String userInfo(String name){
 
+        return this.loadBalanceService.userInfo(name);
+    }
+
+    @GetMapping("order/list")
+    public String orderList(String name){
+
+        return this.loadBalanceService.orderList(name);
+    }
 
 
 

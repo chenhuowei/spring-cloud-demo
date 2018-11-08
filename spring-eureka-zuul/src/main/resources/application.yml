@@ -1,0 +1,21 @@
+server:
+   port: 8766
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+spring:
+  application:
+    name: eureka-zuul
+zuul:
+  routes:
+    api-user:
+      path: /api-user/**
+      serviceId: eureka-client-user
+    api-order:
+      path: /api-order/**
+      serviceId: eureka-client-order
+logging:
+  level:
+    root: INFO

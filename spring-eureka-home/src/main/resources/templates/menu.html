@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>菜单管理</title>
+  <link rel="stylesheet" href="../static/css/index.css">
+  <style>
+    .custom-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    padding-right: 10px;
+  }
+  .span-table{
+    width: 20%;
+  }
+  .el-tree-node__content{
+    height: 40px;
+  }
+</style>
+
+</head>
+
+<body>
+  <div id="app">
+    <template>
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item>系统管理</el-breadcrumb-item>
+        <el-breadcrumb-item>菜单管理</el-breadcrumb-item>
+      </el-breadcrumb>
+      <div class="">
+        <div class="el-tree-node__content" style="padding-left: 2px;">
+          <span class="custom-tree-node">
+            <span style="padding-right: 8px;">
+              <el-button icon="el-icon-circle-plus" type="primary" size="mini" @click="append('')" plain>添加</el-button>
+            </span>
+            <span class="span-table">菜单名称</span>
+            <span class="span-table">链接地址</span>
+            <span class="span-table">目录</span>
+            <span class="span-table">状态</span>
+            <span class="span-table">操作</span>
+          </span>
+        </div>
+        <el-tree :data="menuTree" show-checkbox="" node-key="id" :expand-on-click-node="false">
+          <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span><i :class="node.icon"></i></span>
+            <span class="span-table">{{ data.text }}</span>
+            <span class="span-table">{{ data.url }}</span>
+            <span class="span-table">
+              <el-tag :type="data.isParent?'primary':'info'"> {{ data.isParent?'是':'否' }}</el-tag>
+            </span>
+            <span class="span-table">
+              <el-tag :type="data.enable?'success':'danger'">{{ data.enable?'启用':'禁用' }}</el-tag>
+            </span>
+            <span class="span-table">
+              <el-button size="mini" @click="append(data)" type="primary" v-show="data.isParent" icon="el-icon-plus"
+                plain> 添加 </el-button>
+              <el-button type="" size="mini" icon="el-icon-edit" plain>编辑</el-button>
+              <el-button type="danger" size="mini" icon="el-icon-remove">删除</el-button>
+            </span>
+          </span>
+        </el-tree>
+
+        <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
+          <el-form :model="form">
+            <el-form-item label="菜单名称" :label-width="formLabelWidth">
+              <el-input v-model="form.text" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="菜单图标" :label-width="formLabelWidth">
+              <el-input v-model="form.icon" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="是否为目录" :label-width="formLabelWidth">
+                <el-radio-group v-model="form.isParent">
+                  <el-radio label="true">是</el-radio>
+                  <el-radio label="false">否</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            <el-form-item label="链接地址" :label-width="formLabelWidth" v-show="!form.isParent">
+              <el-input v-model="form.url" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="是否启用" :label-width="formLabelWidth">
+                <el-radio-group v-model="form.enable">
+                  <el-radio label="true">是</el-radio>
+                  <el-radio label="false">否</el-radio>
+                </el-radio-group>
+              </el-form-item>
+           
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="dialogFormVisible = false">保存</el-button>
+          </div>
+        </el-dialog>
+
+    </template>
+  </div>
+  </div>
+  <script src="../static/js/vue.js"></script>
+  <script src="../static/js/index.js"></script>
+  <script>
+    var Main = {
+      data() {
+        return {
+          menuTree: [{
+            id: '12987122',
+            text: '菜单挂历',
+            icon: 'el-icon-menu',
+            urls: './menu.html',
+            isParent: true,
+            enable: true,
+            children: [{
+                id: '129122',
+                text: '1菜单挂历',
+                icon: 'el-icon-menu',
+                url: './menu.html',
+                isParent: false,
+                enable: true,
+                children: [
+
+                ]
+              },
+              {
+                id: '12122',
+                text: '1菜单挂历',
+                icon: 'el-icon-menu',
+                url: './menu.html',
+                isParent: false,
+                enable: true,
+                children: [
+
+                ]
+              }
+            ]
+          }, {
+            id: '129871',
+            text: 'ss菜单挂历',
+            icon: 'el-icon-menu',
+            url: './menu.html',
+            isParent: false,
+            enable: true
+          }, {
+            id: '987122',
+            text: 's菜单挂历',
+            icon: 'el-icon-menu',
+            url: './menu.html',
+            isParent: false,
+            enable: true
+          }, {
+            id: '1122',
+            text: 'a菜单挂历',
+            icon: 'el-icon-menu',
+            url: './menu.html',
+            isParent: true,
+            enable: true
+          }],
+          dialogFormVisible: false,
+          formLabelWidth: '120px',
+          dialogFormTitle: '编辑菜单',
+          form: {
+            id: '',
+            text: '',
+            url: '',
+            icon: 'el-icon-menu',
+            isParent: true,
+            enable: false,
+            children: [],
+          },
+        }
+      },
+      methods: {
+        append(data) {
+          this.dialogFormTitle = '添加菜单';
+          this.dialogFormVisible = true;
+        },
+        remove(node, data) {
+          const parent = node.parent;
+          const children = parent.data.children || parent.data;
+          const index = children.findIndex(d => d.id === data.id);
+          children.splice(index, 1);
+        },
+        openDialog() {
+
+        }
+      }
+    }
+    var Ctor = Vue.extend(Main)
+    new Ctor().$mount('#app')
+  </script>
+
+</body>
+
+</html>

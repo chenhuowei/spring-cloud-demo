@@ -1,0 +1,32 @@
+server:
+   port: 8768
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+spring:
+  application:
+    name: eureka-client-home
+  zipkin:
+    base-url: http://localhost:9411
+  freemarker:
+    template-loader-path: classpath:/templates/
+    cache: false
+    charset: utf-8
+    suffix: .html
+    request-context-attribute: request
+    content-type: text/html
+    expose-request-attributes: false
+    expose-session-attributes: false
+zuul:
+  routes:
+    api-user:
+      path: /api-user/**
+      serviceId: eureka-client-user
+    api-order:
+      path: /api-order/**
+      serviceId: eureka-client-order
+logging:
+  level:
+    root: INFO

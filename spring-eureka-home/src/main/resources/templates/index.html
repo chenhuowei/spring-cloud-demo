@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>首页</title>
+  <link rel="stylesheet" href="css/index.css">
+  <script src="js/vue.js"></script>
+  <script src="js/index.js"></script>
+  <style>
+    html,
+    body,#main{
+      height: 100%;
+      width: 100%;
+      margin: 0;
+    }
+
+    .full-screen,
+    .el-container,
+    .el-aside,
+    .el-menu-vertical {
+      height: 100% !important;
+    }
+
+    .el-header,
+    .el-main {
+      padding: 0 0 0 0;
+    }
+    #tabs{
+      height: calc(100% - 2px) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+    .el-tabs__content{
+      height: 100% !important;
+      margin: 0;
+      padding: 0 !important;
+    }
+
+  </style>
+
+</head>
+
+<body class="full-screen">
+  <div id="app" class="full-screen">
+    <el-container>
+      <el-aside width="200px">
+
+        <el-menu default-active="2" class="el-menu-vertical" @open="handleOpen" @close="handleClose" :collapse="isCollapse"
+          background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+          <el-menu-item v-bind:index="fireway" @click="">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Copy@fireway</span>
+            </template>
+          </el-menu-item>
+          <template v-for="(menu,index) in menuData">
+            <el-submenu v-bind:index="menu.id" v-if="menu.parent">
+              <template slot="title">
+                <i v-bind:class="menu.icon"></i>
+                <span>{{menu.text}}</span>
+              </template>
+              <template v-for="child in menu.children">
+                <el-submenu v-bind:index="child.id" v-if="child.parent">
+                  <template slot="title">
+                    <i v-bind:class="child.icon"></i>
+                    <span>{{child.text}}</span>
+                  </template>
+                  <el-menu-item v-bind:index="child.id" v-for="item in child.children" @click="openTab(item.id,item.text,item.url,item.icon)">
+                    <template slot="title">
+                      <i v-bind:class="item.icon"></i>
+                      <span>{{item.text}}</span>
+                    </template>
+                  </el-menu-item>
+                </el-submenu>
+                <el-menu-item v-bind:index="child.id" v-if="!child.parent" @click="openTab(child.id,child.text,child.url,child.icon)">
+                  <template slot="title">
+                    <i v-bind:class="child.icon"></i>
+                    <span>{{child.text}}</span>
+                  </template>
+                </el-menu-item>
+              </template>
+            </el-submenu>
+            <el-menu-item v-bind:index="menu.id" v-if="!menu.parent" @click="openTab(menu.id,menu.text,menu.url,menu.icon)">
+              <template slot="title">
+                <i v-bind:class="menu.icon"></i>
+                <span>{{menu.text}}</span>
+              </template>
+            </el-menu-item>
+          </template>
+
+        </el-menu>
+
+      </el-aside>
+      <el-container>
+        <el-header>
+
+          <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"
+            background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+            <el-menu-item index="1">Spring-Cloud</el-menu-item>
+            <el-menu-item index="2">ERP</el-menu-item>
+            <el-menu-item index="3"><a href="http://element-cn.eleme.io/#/zh-CN/component/installation" target="tab_iframe">Help</a></el-menu-item>
+          </el-menu>
+
+        </el-header>
+        <el-main id="main">
+          <el-tabs id="tabs" v-model="tabIndex" type="border-card" closable @tab-remove="removeTab">
+
+            <el-tab-pane v-for="(item, index) in tabArr" :key="item.name" :label="item.title" :name="item.name" :closable="item.closable">
+              <span slot="label"><i :class="item.icon"></i>{{item.title}}</span>
+                <div v-html="item.content"></div>
+            </el-tab-pane>
+          </el-tabs>
+
+
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+
+
+  <script src="js/axios.js"></script>
+  <script>
+
+    new Vue({
+      el: '#app',
+      data: {
+        isCollapse: false,
+        activeIndex: '1',
+        tabIndex: 'tab_home',
+        tabArr: [
+            {
+                id:'0',
+                name:'tab_home',
+                title:'Home',
+                icon:'el-icon-menu',
+                closable:false,
+                content: '<iframe src="/home" onload="setIframeHeight(this)" width="100%"'+
+                'height="100%" frameborder="0" name="tab-iframe" id="main-frame" tabindex=""></iframe>'
+            }
+        ],
+        tabClose:false,
+        fireway: 'fireway',
+        menuData: []
+
+      },
+      created() {
+
+      },
+      mounted() {
+          _this = this;
+          axios.get('/home/menu')
+              .then(function (response) {
+                  _this.menuData = response.data.data;
+                  console.log(_this.menuData);
+              })
+              .catch(function (error) {
+                  console.log(error);
+              });
+      },
+      methods: {
+        handleSelect(key, keyPath) {
+          console.log(key, keyPath);
+        },
+        handleOpen(key, keyPath) {
+          console.log(key, keyPath);
+        },
+        handleClose(key, keyPath) {
+          console.log(key, keyPath);
+        },
+        collapseFn() {
+          if (this.isCollapse) {
+            this.isCollapse = false;
+          } else {
+            this.isCollapse = true;
+          }
+
+        },
+        openTab(id, text, url, icon) {
+         /* let index = document.getElementById('main-frame').getAttribute('tabindex');
+          if (index != "frame_index_" + id) {-
+            document.getElementById('main-frame').setAttribute('tabindex', "frame_index_" + id);
+            document.getElementById('main-frame').setAttribute('src', '' + url);
+          }*/
+         let tabId = 'tab_'+id;
+         if (this.tabArr.filter(function (item) {
+             return item.name === tabId;
+                }).length == 0){
+
+             this.addTab(text,tabId,url,icon);
+         }else {
+            this.tabIndex = tabId;
+         }
+
+        },
+        addTab(title,name,url,icon){
+           // let newTabName = ++this.tabIndex + '';
+            this.tabArr.push({
+                title: title,
+                name: name,
+                closable:true,
+                content: '<iframe src="'+url+'" onload="setIframeHeight(this)" width="100%"'+
+                'height="100%" frameborder="0" name="tab-iframe" id="main-frame" tabindex=""></iframe>'
+            });
+            this.tabIndex = name;
+        },
+        removeTab(targetName){
+            let tabs = this.tabArr;
+            let activeName = this.tabIndex;
+            if (activeName === targetName) {
+                tabs.forEach((tab, index) => {
+                    if (tab.name === targetName) {
+                    let nextTab = tabs[index + 1] || tabs[index - 1];
+                    if (nextTab) {
+                        activeName = nextTab.name;
+                    }
+                }
+            });
+            }
+            this.tabIndex = activeName;
+            this.tabArr = tabs.filter(tab => tab.name !== targetName);
+        }
+
+      }
+    })
+
+    var main = document.getElementsByClassName('el-tabs__content')[0];
+    function setIframeHeight(iframe) {
+        if (iframe) {
+            iframe.height = main.clientHeight - 5;
+        }
+    };
+
+    window.onresize = function () {
+        setIframeHeight(document.getElementsByName('tab-iframe'));
+    };
+
+  </script>
+
+</body>
+
+</html>

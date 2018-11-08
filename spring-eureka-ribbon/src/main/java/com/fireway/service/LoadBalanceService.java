@@ -1,5 +1,6 @@
 package com.fireway.service;
 
+import com.fireway.utils.LoggerUtil;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,21 @@ public class LoadBalanceService {
     public String user(String name){
         return  restTemplate.getForObject("http://eureka-client-user/user?name="+name,String.class);
     }
+    @HystrixCommand(fallbackMethod = "userError")
+    public String userInfo(String name){
+        return  restTemplate.getForObject("http://eureka-client-user/user/info?name="+name,String.class);
+    }
 
     @HystrixCommand(fallbackMethod = "orderError")
     public String order(String name){
         return  restTemplate.getForObject("http://eureka-client-order/order?name="+name,String.class);
     }
+    @HystrixCommand(fallbackMethod = "orderError")
+    public String orderList(String name){
+        return  restTemplate.getForObject("http://eureka-client-order/order/list?name="+name,String.class);
+    }
+
+
 
     public String userError(String name){
 
@@ -34,6 +45,7 @@ public class LoadBalanceService {
 
         return "[order] service is error!";
     }
+
 
 
 }
