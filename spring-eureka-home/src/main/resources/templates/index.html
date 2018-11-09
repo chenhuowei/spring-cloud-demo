@@ -37,7 +37,9 @@
       margin: 0;
       padding: 0 !important;
     }
-
+    .el-button+.el-button{
+        margin: 0 !important;
+    }
   </style>
 
 </head>
@@ -58,25 +60,25 @@
           <template v-for="(menu,index) in menuData">
             <el-submenu v-bind:index="menu.id" v-if="menu.parent">
               <template slot="title">
-                <i v-bind:class="menu.icon"></i>
+                <i :class="menu.icon"></i>
                 <span>{{menu.text}}</span>
               </template>
               <template v-for="child in menu.children">
                 <el-submenu v-bind:index="child.id" v-if="child.parent">
                   <template slot="title">
-                    <i v-bind:class="child.icon"></i>
+                    <i :class="child.icon"></i>
                     <span>{{child.text}}</span>
                   </template>
                   <el-menu-item v-bind:index="child.id" v-for="item in child.children" @click="openTab(item.id,item.text,item.url,item.icon)">
                     <template slot="title">
-                      <i v-bind:class="item.icon"></i>
+                      <i :class="item.icon"></i>
                       <span>{{item.text}}</span>
                     </template>
                   </el-menu-item>
                 </el-submenu>
                 <el-menu-item v-bind:index="child.id" v-if="!child.parent" @click="openTab(child.id,child.text,child.url,child.icon)">
                   <template slot="title">
-                    <i v-bind:class="child.icon"></i>
+                    <i :class="child.icon"></i>
                     <span>{{child.text}}</span>
                   </template>
                 </el-menu-item>
@@ -84,7 +86,7 @@
             </el-submenu>
             <el-menu-item v-bind:index="menu.id" v-if="!menu.parent" @click="openTab(menu.id,menu.text,menu.url,menu.icon)">
               <template slot="title">
-                <i v-bind:class="menu.icon"></i>
+                <i :class="menu.icon"></i>
                 <span>{{menu.text}}</span>
               </template>
             </el-menu-item>
@@ -108,7 +110,9 @@
           <el-tabs id="tabs" v-model="tabIndex" type="border-card" closable @tab-remove="removeTab">
 
             <el-tab-pane v-for="(item, index) in tabArr" :key="item.name" :label="item.title" :name="item.name" :closable="item.closable">
-              <span slot="label"><i :class="item.icon"></i>{{item.title}}</span>
+                <span slot="label" @contextmenu.prevent="tabMenuFn(item.name)" :id="item.name">
+                    <i :class="item.icon">{{item.title}}</i>
+                </span>
                 <div v-html="item.content"></div>
             </el-tab-pane>
           </el-tabs>
@@ -117,6 +121,16 @@
         </el-main>
       </el-container>
     </el-container>
+
+
+      <div v-show="tabMenuVisiable" :style="tabMenuStyle">
+            <el-button  @click="closeTab(0)"  icon="" size="mini" round with="40px">关闭当前</el-button>
+            <el-button  @click="closeTab(1)" icon="" size="mini" round with="40px">关闭其他</el-button>
+            <el-button  @click="closeTab(2)" icon="" size="mini" round with="40px">关闭全部</el-button>
+            <el-button  @click="tabMenuVisiable=false" icon="el-icon-close" size="mini" round with="40px">关闭</el-button>
+      </div>
+
+
   </div>
 
 
@@ -127,12 +141,13 @@
       el: '#app',
       data: {
         isCollapse: false,
+        tabMenuVisiable:false,
         activeIndex: '1',
-        tabIndex: 'tab_home',
+        tabIndex: 'tab-home',
         tabArr: [
             {
                 id:'0',
-                name:'tab_home',
+                name:'tab-home',
                 title:'Home',
                 icon:'el-icon-menu',
                 closable:false,
@@ -141,14 +156,19 @@
             }
         ],
         tabClose:false,
+        fixedTab:'tab-home',
         fireway: 'fireway',
+        tabMenuStyle:{
+            position:'absolute',
+            top:'100px',
+            left:'100px',
+            width:'40px',
+            'z-index':999
+        },
         menuData: []
 
       },
       created() {
-
-      },
-      mounted() {
           _this = this;
           axios.get('/home/menu')
               .then(function (response) {
@@ -158,6 +178,20 @@
               .catch(function (error) {
                   console.log(error);
               });
+          // 定义全局点击函数
+          Vue.prototype.globalClick = function (callback) {
+              document.getElementById('app').onclick = function () {
+                  callback();
+              };
+          };
+      },
+      mounted() {
+          _this = this;
+          this.globalClick(function () {
+              if(_this.tabMenuVisiable){
+                  _this.tabMenuVisiable = false;
+              }
+          });
       },
       methods: {
         handleSelect(key, keyPath) {
@@ -178,12 +212,7 @@
 
         },
         openTab(id, text, url, icon) {
-         /* let index = document.getElementById('main-frame').getAttribute('tabindex');
-          if (index != "frame_index_" + id) {-
-            document.getElementById('main-frame').setAttribute('tabindex', "frame_index_" + id);
-            document.getElementById('main-frame').setAttribute('src', '' + url);
-          }*/
-         let tabId = 'tab_'+id;
+         let tabId = 'tab-'+id;
          if (this.tabArr.filter(function (item) {
              return item.name === tabId;
                 }).length == 0){
@@ -193,6 +222,17 @@
             this.tabIndex = tabId;
          }
 
+        },
+        tabMenuFn(tabId){
+            this.tabIndex = tabId;
+            this.tabMenuVisiable = true;
+            var e = window.event;
+            let top = e.pageY+15;
+            let left = e.pageX;
+            this.tabMenuStyle.top = (top)+'px'
+            this.tabMenuStyle.left = (left)+'px'
+            console.info(this.tabMenuStyle);
+            console.info(tabId+'=='+top+"--"+left);
         },
         addTab(title,name,url,icon){
            // let newTabName = ++this.tabIndex + '';
@@ -205,6 +245,19 @@
             });
             this.tabIndex = name;
         },
+        closeTab(index){
+            _this = this;
+            console.info(this.tabIndex);
+            if (index ===0){
+                this.removeTab(this.tabIndex);
+            }else if (index ===1) {
+                this.tabArr = this.tabArr.filter(tab => tab.name === _this.tabIndex || tab.name === _this.fixedTab);
+            }else if (index ===2){
+                this.tabArr = this.tabArr.filter(tab => tab.name === _this.fixedTab);
+                this.tabIndex = this.fixedTab;
+            }
+            this.tabMenuVisiable = false;
+          },
         removeTab(targetName){
             let tabs = this.tabArr;
             let activeName = this.tabIndex;
@@ -220,7 +273,10 @@
             }
             this.tabIndex = activeName;
             this.tabArr = tabs.filter(tab => tab.name !== targetName);
-        }
+        },
+          handleDialogClose(done){
+              done();
+          }
 
       }
     })
